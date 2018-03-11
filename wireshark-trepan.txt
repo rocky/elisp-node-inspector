@@ -1,0 +1,195 @@
+Frame 4166: 106 bytes on wire (848 bits), 106 bytes captured (848 bits) on interface 0
+    Interface id: 0 (lo)
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Mar 11, 2018 18:33:14.458148742 EDT
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1520807594.458148742 seconds
+    [Time delta from previous captured frame: 0.006319671 seconds]
+    [Time delta from previous displayed frame: 0.006319671 seconds]
+    [Time since reference or first frame: 25.036789796 seconds]
+    Frame Number: 4166
+    Frame Length: 106 bytes (848 bits)
+    Capture Length: 106 bytes (848 bits)
+    [Frame is marked: False]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:tcp:http:websocket:data-text-lines]
+    [Coloring Rule Name: TCP]
+    [Coloring Rule String: tcp]
+Ethernet II, Src: 00:00:00_00:00:00 (00:00:00:00:00:00), Dst: 00:00:00_00:00:00 (00:00:00:00:00:00)
+Internet Protocol Version 4, Src: 127.0.0.1, Dst: 127.0.0.1
+Transmission Control Protocol, Src Port: 56082, Dst Port: 9229, Seq: 190, Ack: 130, Len: 40
+    Source Port: 56082
+    Destination Port: 9229
+    [Stream index: 5]
+    [TCP Segment Len: 40]
+    Sequence number: 190    (relative sequence number)
+    [Next sequence number: 230    (relative sequence number)]
+    Acknowledgment number: 130    (relative ack number)
+    Header Length: 32 bytes
+    Flags: 0x018 (PSH, ACK)
+    Window size value: 350
+    [Calculated window size: 44800]
+    [Window size scaling factor: 128]
+    Checksum: 0xfe50 [unverified]
+    [Checksum Status: Unverified]
+    Urgent pointer: 0
+    Options: (12 bytes), No-Operation (NOP), No-Operation (NOP), Timestamps
+        No-Operation (NOP)
+        No-Operation (NOP)
+        Timestamps: TSval 5162218, TSecr 5162216
+    [SEQ/ACK analysis]
+        [iRTT: 0.000011096 seconds]
+        [Bytes in flight: 40]
+        [Bytes sent since last PSH flag: 40]
+    [PDU Size: 40]
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .010 0010 = Payload length: 34
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":1,"method":"Runtime.enable"}
+--------------------------------------------------------------------------------------
+Frame 4180: 607 bytes on wire (4856 bits), 607 bytes captured (4856 bits) on interface 0
+    Interface id: 0 (lo)
+    Encapsulation type: Ethernet (1)
+    Arrival Time: Mar 11, 2018 18:33:14.496298543 EDT
+    [Time shift for this packet: 0.000000000 seconds]
+    Epoch Time: 1520807594.496298543 seconds
+    [Time delta from previous captured frame: 0.000020011 seconds]
+    [Time delta from previous displayed frame: 0.000020011 seconds]
+    [Time since reference or first frame: 25.074939597 seconds]
+    Frame Number: 4180
+    Frame Length: 607 bytes (4856 bits)
+    Capture Length: 607 bytes (4856 bits)
+    [Frame is marked: False]
+    [Frame is ignored: False]
+    [Protocols in frame: eth:ethertype:ip:tcp:http:websocket:data-text-lines:data-text-lines:data-text-lines:data-text-lines:data-text-lines:data-text-lines:data-text-lines:data-text-lines]
+    [Coloring Rule Name: TCP]
+    [Coloring Rule String: tcp]
+Ethernet II, Src: 00:00:00_00:00:00 (00:00:00:00:00:00), Dst: 00:00:00_00:00:00 (00:00:00:00:00:00)
+Internet Protocol Version 4, Src: 127.0.0.1, Dst: 127.0.0.1
+Transmission Control Protocol, Src Port: 56082, Dst Port: 9229, Seq: 230, Ack: 130, Len: 541
+    Source Port: 56082
+    Destination Port: 9229
+    [Stream index: 5]
+    [TCP Segment Len: 541]
+    Sequence number: 230    (relative sequence number)
+    [Next sequence number: 771    (relative sequence number)]
+    Acknowledgment number: 130    (relative ack number)
+    Header Length: 32 bytes
+    Flags: 0x018 (PSH, ACK)
+    Window size value: 350
+    [Calculated window size: 44800]
+    [Window size scaling factor: 128]
+    Checksum: 0x0046 [unverified]
+    [Checksum Status: Unverified]
+    Urgent pointer: 0
+    Options: (12 bytes), No-Operation (NOP), No-Operation (NOP), Timestamps
+        No-Operation (NOP)
+        No-Operation (NOP)
+        Timestamps: TSval 5162228, TSecr 5162228
+    [SEQ/ACK analysis]
+        [iRTT: 0.000011096 seconds]
+        [Bytes in flight: 541]
+        [Bytes sent since last PSH flag: 541]
+    [PDU Size: 41]
+    [PDU Size: 80]
+    [PDU Size: 41]
+    [PDU Size: 81]
+    [PDU Size: 81]
+    [PDU Size: 79]
+    [PDU Size: 81]
+    [PDU Size: 57]
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .010 0011 = Payload length: 35
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":2,"method":"Profiler.enable"}
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .100 1010 = Payload length: 74
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":3,"method":"Profiler.setSamplingInterval","params":{"interval":100}}
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .010 0011 = Payload length: 35
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":4,"method":"Debugger.enable"}
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .100 1011 = Payload length: 75
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":5,"method":"Debugger.setPauseOnExceptions","params":{"state":"none"}}
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .100 1011 = Payload length: 75
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":6,"method":"Debugger.setAsyncCallStackDepth","params":{"maxDepth":0}}
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .100 1001 = Payload length: 73
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":7,"method":"Debugger.setBlackboxPatterns","params":{"patterns":[]}}
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .100 1011 = Payload length: 75
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":8,"method":"Debugger.setPauseOnExceptions","params":{"state":"none"}}
+WebSocket
+    1... .... = Fin: True
+    .000 .... = Reserved: 0x0
+    .... 0001 = Opcode: Text (1)
+    1... .... = Mask: True
+    .011 0011 = Payload length: 51
+    Masking-Key: 00000000
+    Masked payload
+    Payload
+Line-based text data
+    {"id":9,"method":"Runtime.runIfWaitingForDebugger"}
