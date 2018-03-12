@@ -16,13 +16,15 @@
 	(sleep-for 1)
 	(goto-char (point-min))
 	(setq match-point (re-search-forward "Debugger listening on \\(ws://.+$\\)" nil t 1))
-	(when match-point
+	(if (not match-point)
+	    (error (format "\"node --inspect-brk %s\"failed" name))
 	  ;; Found socket in response. Now connect to that.
 	  (let* ((ws-url (buffer-substring (match-beginning 1) (match-end 1)))
 		 (node-inspect-msgs nil)
 		 (node-inspect-errs nil)
 		 (node-inspect-msgs nil)
 		 (node-inspect-closed nil)
+		 (id 1)
 		 (node-inspect-ws
 		  (websocket-open
 		   ws-url
@@ -30,6 +32,17 @@
 				 (push (websocket-frame-text frame) node-inspect-msgs)
 				 (message "ws frame: %S" (websocket-frame-text frame)))
 		   :on-close (lambda (_websocket) (setq node-inspect-closed t)))))
+
+	    (defun node-inspect-request(method-params)
+	      (let ((prefix (format "{\"id\":%d,\"method\":\"%s\""
+				    id (car method-params)))
+		    (suffix (if (cdr method-params)
+				(format ",\"params\":{%s}}"
+					(cadr method-params))
+			      "}")))
+		(setq id (1+ id))
+		(concat prefix suffix)))
+
 	    (sleep-for 0.6)
 	    (assert (websocket-openp node-inspect-ws))
 	    (sleep-for 0.6)
@@ -42,16 +55,19 @@
 	    ;;       "id": 1, "origin": "", "name":  "/usr/bin/node[20164]"
 	    ;;     } } }
 	    ;; ...
-	    (dolist (cmd '("{\"id\":1,\"method\":\"Runtime.enable\"}"
-		      "{\"id\":2,\"method\":\"Profiler.enable\"}"
-		      "{\"id\":3,\"method\":\"Profiler.setSamplingInterval\",\"params\":{\"interval\":100}}"
-		      "{\"id\":4,\"method\":\"Debugger.enable\"}"
-                      "{\"id\":5,\"method\":\"Debugger.setPauseOnExceptions\",\"params\":{\"state\":\"none\"}}"
-		      "{\"id\":6,\"method\":\"Debugger.setAsyncCallStackDepth\",\"params\":{\"maxDepth\":0}}"
-                      "{\"id\":7,\"method\":\"Debugger.setBlackboxPatterns\",\"params\":{\"patterns\":[]}}"
-		      "{\"id\":8,\"method\":\"Debugger.setPauseOnExceptions\",\"params\":{\"state\":\"none\"}}"
-		      "{\"id\":9,\"method\":\"Runtime.runIfWaitingForDebugger\"}"))
-		    (websocket-send-text node-inspect-ws cmd))
+	    (dolist
+		(cmd (mapcar
+		      'node-inspect-request
+		      '(("Runtime.enable")
+			("Profiler.enable")
+			("Profiler.setSamplingInterval"    "\"interval\":100")
+			("Debugger.enable")
+			("Debugger.setPauseOnExceptions"   "\"state\":\"none\"")
+			("Debugger.setAsyncCallStackDepth" "\"maxDepth\":0")
+			("Debugger.setBlackboxPatterns"    "\"patterns\":\"[]\"")
+			("Debugger.setPauseOnExceptions"   "\"state\":\"none\"")
+			("Runtime.runIfWaitingForDebugger"))))
+	      (websocket-send-text node-inspect-ws cmd))
 
 	    (sleep-for 1)
 	    (message "%s" node-inspect-msgs)
