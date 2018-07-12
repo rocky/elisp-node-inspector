@@ -1,6 +1,47 @@
+;;; Towards an Emacs interface to node inspect
+;;;
+
 (require 'websocket)
 (require 'realgud)
+(require 'json)
+(require 'cl)
 (eval-when-compile (require 'cl))
+
+(defvar node-inspect-script-ids (make-hash-table :test 'equal)
+  "Hash table of all of the node scriptIds seen so far"
+  )
+
+(defvar node-inspect-urls (make-hash-table :test 'equal)
+  "Hash table of all of the node method urls seen so far"
+  )
+
+(defun parse-inspect-responses (responses)
+  "Parses a list of JSON strings from response from a node inspect process"
+  (assert (listp responses))
+  (dolist (response responses)
+    (parse-inspect-response response)))
+
+(defun parse-inspect-response (node-inspect-response)
+  "Parses a single a JSON string from response from a node inspect process"
+  (assert (stringp node-inspect-response))
+  (let ((inspect-obj (json-read-from-string node-inspect-response))
+	(value))
+    (cond ((assoc 'method inspect-obj)
+	   (setq value (assoc 'params inspect-obj))
+	   (assert value)
+	   (handle-method-params value))
+	  (t (message "Don't know what to do with %s" node-inspect-response)))))
+
+(defun handle-method-params (params-obj)
+  "Parses the parameters of a JSON method object"
+  (let ((script-id (assoc 'scriptId params-obj))
+	(url (assoc 'url params-obj)))
+    (if script-id
+	(setf (gethash (cdr script-id) node-inspect-script-ids) params-obj)
+      (message "Null script id in %s" params-obj))
+    (if url
+	(setf (gethash (cdr url) node-inspect-urls) params-obj)
+      (message "Null url in %s" params-obj))))
 
 (defun realgud-inspect-run (name)
   (let* ((node-inspect-name (format "node-inspect-%s" name))
