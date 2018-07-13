@@ -1,2 +1,16 @@
-/.python-version
 *~
+.python-version
+/*.tar.gz
+/README
+/aclocal.m4
+/autom4te.cache
+/common.mk
+/config.log
+/config.status
+/configure
+/install-sh
+/missing
+Makefile
+Makefile.in
+elc-stamp
+elc-temp

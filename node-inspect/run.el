@@ -2,6 +2,15 @@
 ;;; See https://chromedevtools.github.io/devtools-protocol/tot/Debugger
 ;;; for how to parse the JSON structures
 
+;; Package-Requires: ((load-relative "1.2") (cl-lib "0.5") (emacs "25"))
+
+;; Press C-x C-e at the end of the next line configure the program in
+;; for building via "make" to get set up.
+;; (compile (format "EMACSLOADPATH=:%s:%s:%s ./autogen.sh" (file-name-directory (locate-library "test-simple.elc")) (file-name-directory (locate-library "load-relative.elc")) (file-name-directory (locate-library "loc-changes.elc"))))
+
+(require 'load-relative)
+(require-relative-list '("handlers") "node-inspect-")
+
 (require 'websocket)
 (require 'realgud)
 (require 'json)
@@ -12,6 +21,10 @@
 ;;; as-yet-to-be determined base.
 (defvar node-inspect-requests '()
   "list of requests issued"
+  )
+
+(defvar node-inspect-responses '()
+  "list of responses received"
   )
 
 (defvar node-inspect-script-ids (make-hash-table :test 'equal)
@@ -92,60 +105,6 @@ inspect information")
 	   (handle-response-id inspect-obj))
 	  (t unknown-response))))
 
-(defun handle-method (params-obj)
-  "Parses a JSON method object"
-  (let* ((method-obj (assoc 'method params-obj))
-	 (method-name (cdr method-obj))
-	 (value))
-    (cond ((equal method-name "Debugger.scriptParsed")
-	   (setq value (assoc 'params inspect-obj))
-	   (handle-method-script-parsed value))
-	  ((equal method-name "Runtime.executionContextCreated")
-	   (print (format "todo: Runtime.executionContextCreated %s"
-			  method-name params-obj)))
-	  ((equal method-name "Runtime.executionContextDestroyed")
-	   (print (format "todo: Runtime.executionContextDestroyed %s"
-			  params-obj)))
-	  ((equal method-name "Runtime.execeptionThrown")
-	   (print (format "todo: Runtime.executionThrown %s"
-			  params-obj)))
-	  (t (print (format "Don't know how to handle %s in %s"
-			    method-name params-obj))))))
-
-(defun handle-method-script-parsed (params-obj)
-  "Parses a JSON method object"
-  (let ((script-id (assoc 'scriptId params-obj))
-	(url (assoc 'url params-obj)))
-    (if script-id
-	(setf (gethash (cdr script-id) node-inspect-script-ids) params-obj)
-      (message "Null script id in %s" params-obj))
-    (if url
-	(setf (gethash (cdr url) node-inspect-urls) params-obj)
-      (message "Null url in %s" params-obj))))
-
-(defun handle-response-id (inspect-obj)
-  "Handles a response id"
-  (assert (listp inspect-obj))
-  (let ((id (assoc 'result inspect-obj)))
-    (assert id)
-    (setq node-inspect-responses
-	  (plist-put node-inspect-responses id inspect-obj))))
-
-(defun handle-error-response (inspect-obj)
-  "Handles an error response"
-  (assert (listp inspect-obj))
-  (let* ((id (assoc 'id inspect-obj))
-	 (err (assoc 'error inspect-obj))
-	 (code (assoc 'code err))
-	 (msg (assoc 'message err))
-	 (data (assoc 'data err)))
-    (assert id)
-    (node-inspect-buffer-append "errors" inspect-obj)
-    (print (format "id: %d, %s, data: %s"
-		   (cdr id) (cdr msg) (cdr data)))
-    (setq node-inspect-responses
-	  (plist-put node-inspect-responses id inspect-obj))))
-
 ;; See https://nodejs.org/en/docs/guides/debugging-getting-started/
 ;; for information on options.
 (defun node-inspect-run (name)
@@ -220,4 +179,6 @@ inspect information")
 	    (kill-process node-inspect-proc)
 	    ))))))
 
-(node-inspect-run "example/gcd.js")
+(node-inspect-run "../example/gcd.js")
+
+(provide-me "node-inspect-")
