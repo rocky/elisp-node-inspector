@@ -31,7 +31,7 @@
 
 ;; Press C-x C-e at the end of the next line configure the program in
 ;; for building via "make" to get set up.
-;; (compile (format "EMACSLOADPATH=:%s:%s:%s ./autogen.sh" (file-name-directory (locate-library "test-simple.elc")) (file-name-directory (locate-library "load-relative.elc")) (file-name-directory (locate-library "loc-changes.elc"))))
+;; (compile (format "EMACSLOADPATH=:%s:%s:%s:%s ./autogen.sh" (file-name-directory (locate-library "test-simple.elc")) (file-name-directory (locate-library "load-relative.elc")) (file-name-directory (locate-library "loc-changes.elc")) (file-name-directory (locate-library "websocket.elc"))))
 
 (require 'load-relative)
 

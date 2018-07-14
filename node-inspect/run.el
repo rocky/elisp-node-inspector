@@ -9,7 +9,7 @@
 ;; (compile (format "EMACSLOADPATH=:%s:%s:%s ./autogen.sh" (file-name-directory (locate-library "test-simple.elc")) (file-name-directory (locate-library "load-relative.elc")) (file-name-directory (locate-library "loc-changes.elc"))))
 
 (require 'load-relative)
-(require-relative-list '("handlers") "node-inspect-")
+(require-relative-list '("buffers" "cmds" "handlers") "node-inspect-")
 
 (require 'websocket)
 (require 'realgud)
@@ -19,12 +19,12 @@
 
 ;;; Note these variables should all be buffer local to some
 ;;; as-yet-to-be determined base.
-(defvar node-inspect-requests '()
-  "list of requests issued"
-  )
-
 (defvar node-inspect-responses '()
   "list of responses received"
+  )
+
+(defvar node-inspect-process nil
+  "When non-nil a process buffer for a 'node --inspect' invocation"
   )
 
 (defvar node-inspect-script-ids (make-hash-table :test 'equal)
@@ -34,39 +34,6 @@
 (defvar node-inspect-urls (make-hash-table :test 'equal)
   "Hash table of all of the node method urls seen"
   )
-
-(defvar node-inspect-name nil
-  "base name of project/main js that we are using"
-  )
-
-(defconst node-inspect-buffer-types
-  '("requests" "responses" "errors")
-  "The kinds of buffer we create for showing node
-inspect information")
-
-(defun node-inspect-request(method-params)
-  (let ((prefix (format "{\"id\":%d,\"method\":\"%s\""
-			id (car method-params)))
-	(suffix (if (cdr method-params)
-		    (format ",\"params\":{%s}}"
-			    (cadr method-params))
-		  "}")))
-    (plist-put node-inspect-requests id method-params)
-    (node-inspect-buffer-append "requests" (cons id method-params))
-    (setq id (1+ id))
-    (concat prefix suffix)))
-
-(defun node-inspect-buffer-name (buffer-type &optional opt-name)
-  (let ((name (or opt-name node-inspect-name)))
-    (format "*Node Inspect %s %s*" buffer-type name)))
-
-(defun node-inspect-buffer-append(buffer-type item)
-  "Append ITEM to BUFFER"
-  (let ((buffer-name (node-inspect-buffer-name buffer-type)))
-    (with-current-buffer buffer-name
-      (goto-char (point-max))
-      (insert (format "%s\n" item))
-      )))
 
 (defun node-inspect-initialize (name)
   "Initialize node-inspect variables and buffers"
@@ -79,6 +46,7 @@ inspect information")
 
 (defun node-inspect-reset-vars()
   "Reset all variables saved"
+  (setq node-inspect-last-id 0)
   (setq node-inspect-requests '())
   (setq node-inspect-responses '())
   (setq node-inspect-ids '())
@@ -110,7 +78,7 @@ inspect information")
 (defun node-inspect-run (name)
   "Run file NAME under node --inspect and track interaction via a websocket"
   (let* ((node-inspect-name (node-inspect-buffer-name "process" name))
-	 (node-inspect-buffer (get-buffer-create (format "*%s*" node-inspect-name))))
+	 (node-inspect-buffer (get-buffer-create node-inspect-name)))
 
     (with-current-buffer node-inspect-buffer
       (erase-buffer)
@@ -124,23 +92,22 @@ inspect information")
 	(goto-char (point-min))
 	(setq match-point (re-search-forward "Debugger listening on \\(ws://.+$\\)" nil t 1))
 	(if (not match-point)
-	    (error (format "\"node --inspect-brk %s\"failed" name))
+	    (error (format "\"node --inspect-brk %s\" failed" name))
 	  ;; Found socket in response. Now connect to that.
 	  (let* ((ws-url (buffer-substring (match-beginning 1) (match-end 1)))
 		 (node-inspect-msgs nil)
 		 (node-inspect-errs nil)
 		 (node-inspect-msgs nil)
 		 (node-inspect-closed nil)
-		 (response nil)
-		 (id 1)
-		 (node-inspect-ws
+		 (response nil))
+	    (setq node-inspect-ws
 		  (websocket-open
 		   ws-url
 		   :on-message (lambda (_websocket frame)
 				 (setq response (websocket-frame-text frame))
-				 (parse-inspect-response response)
-				 (print (format "ws frame: %S\n" response)))
-		   :on-close (lambda (_websocket) (setq node-inspect-closed t)))))
+				 (print (format "ws frame: %S\n" response))
+				 (parse-inspect-response response))
+		   :on-close (lambda (_websocket) (setq node-inspect-closed t))))
 
 	    (sleep-for 0.6)
 	    (assert (websocket-openp node-inspect-ws))
@@ -167,18 +134,21 @@ inspect information")
 			;;("Debugger.setBlackboxPatterns"    "\"patterns\":\"[]\"")
 			("Debugger.setPauseOnExceptions"   "\"state\":\"none\"")
 			("Runtime.runIfWaitingForDebugger"))))
-	      (websocket-send-text node-inspect-ws cmd))
+	      (node-inspect-send-cmd node-inspect-ws cmd))
 
 	    (sleep-for 1)
-	    (message "%s" node-inspect-msgs)
-
-	    ;; Terminate connection
-	    (websocket-close node-inspect-ws)
-
-	    ;; Terminate node inspect process
-	    (kill-process node-inspect-proc)
 	    ))))))
 
-(node-inspect-run "../example/gcd.js")
+;;; FIXME remove global variables
+(defun node-inspect-terminate()
+  (interactive "")
+  ;; Terminate connection
+  (websocket-close node-inspect-ws)
+
+  ;; Terminate node inspect process
+  (kill-process node-inspect-process))
+
+
+;; (node-inspect-run "../example/gcd.js")
 
 (provide-me "node-inspect-")

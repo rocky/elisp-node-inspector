@@ -12,6 +12,12 @@
     (cond ((equal method-name "Debugger.scriptParsed")
 	   (setq value (assoc 'params inspect-obj))
 	   (handle-method-script-parsed value))
+	  ((equal method-name "Debugger.paused")
+	   (setq value (assoc 'params inspect-obj))
+	   (handle-method-debugger-paused inspect-obj))
+	  ((equal method-name "Debugger.resumed")
+	   (print (format "todo: Debugger.resumed %s"
+			  params-obj)))
 	  ((equal method-name "Runtime.executionContextCreated")
 	   (print (format "todo: Runtime.executionContextCreated %s"
 			  method-name params-obj)))
@@ -23,6 +29,17 @@
 			  params-obj)))
 	  (t (print (format "Don't know how to handle %s in %s"
 			    method-name params-obj))))))
+
+(defun handle-method-debugger-paused (params-obj)
+  "Parses a JSON Debugger.paused object"
+  (let ((script-id (assoc 'scriptId params-obj))
+	(url (assoc 'url params-obj)))
+    (if script-id
+	(setf (gethash (cdr script-id) node-inspect-script-ids) params-obj)
+      (message "Null script id in %s" params-obj))
+    (if url
+	(setf (gethash (cdr url) node-inspect-urls) params-obj)
+      (message "Null url in %s" params-obj))))
 
 (defun handle-method-script-parsed (params-obj)
   "Parses a JSON method object"
