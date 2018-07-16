@@ -60,9 +60,10 @@
 (defun parse-inspect-response (node-inspect-response)
   "Parses a single a JSON string from response from a node inspect process"
   (assert (stringp node-inspect-response))
+  (node-inspect-buffer-append "responses" node-inspect-response)
   (let ((inspect-obj (json-read-from-string node-inspect-response))
 	(value))
-    (node-inspect-buffer-append "responses" inspect-obj)
+    ;; (node-inspect-buffer-append "responses" inspect-obj)
     (print inspect-obj)
     (cond ((assoc 'method inspect-obj)
 	   (handle-method inspect-obj))
@@ -72,6 +73,27 @@
 	  ((assoc 'id inspect-obj)
 	   (handle-response-id inspect-obj))
 	  (t unknown-response))))
+
+(defun parse-inspect-response-from-region (from to)
+  (interactive "r")
+  (let ((text (buffer-substring-no-properties from to)))
+    (parse-inspect-response text)))
+
+(defun node-inspect-initialize-cmds()
+  (dolist
+      (cmd (mapcar
+	    'node-inspect-request
+	    '(("Runtime.enable")
+	      ("Profiler.enable")
+	      ("Profiler.setSamplingInterval"    "\"interval\":100")
+	      ("Debugger.enable")
+	      ("Debugger.setPauseOnExceptions"   "\"state\":\"none\"")
+	      ("Debugger.setAsyncCallStackDepth" "\"maxDepth\":0")
+	      ;;("Debugger.setBlackboxPatterns"    "\"patterns\":\"[]\"")
+	      ("Debugger.setPauseOnExceptions"   "\"state\":\"none\"")
+	      ("Runtime.runIfWaitingForDebugger"))))
+    (node-inspect-send-cmd node-inspect-ws cmd))
+  )
 
 ;; See https://nodejs.org/en/docs/guides/debugging-getting-started/
 ;; for information on options.
@@ -83,10 +105,10 @@
     (with-current-buffer node-inspect-buffer
       (erase-buffer)
       (node-inspect-initialize name)
-      (let ((node-inspect-proc
-	     (start-process node-inspect-name node-inspect-buffer
-			    "node" "--inspect-brk" name))
-	    (match-point))
+      (let ((match-point))
+	(setq node-inspect-process
+	      (start-process node-inspect-name node-inspect-buffer
+			     "node" "--inspect-brk" name))
 	;; node inspect is running. Find the websocket it is listening on, and connect to that.
 	(sleep-for 1)
 	(goto-char (point-min))
@@ -122,20 +144,7 @@
 	    ;;     } } }
 	    ;; ...
 
-	    (dolist
-		(cmd (mapcar
-		      'node-inspect-request
-		      '(("Runtime.enable")
-			("Profiler.enable")
-			("Profiler.setSamplingInterval"    "\"interval\":100")
-			("Debugger.enable")
-			("Debugger.setPauseOnExceptions"   "\"state\":\"none\"")
-			("Debugger.setAsyncCallStackDepth" "\"maxDepth\":0")
-			;;("Debugger.setBlackboxPatterns"    "\"patterns\":\"[]\"")
-			("Debugger.setPauseOnExceptions"   "\"state\":\"none\"")
-			("Runtime.runIfWaitingForDebugger"))))
-	      (node-inspect-send-cmd node-inspect-ws cmd))
-
+	    (node-inspect-initialize-cmds)
 	    (sleep-for 1)
 	    ))))))
 

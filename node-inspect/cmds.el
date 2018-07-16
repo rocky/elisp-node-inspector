@@ -40,6 +40,16 @@
   (interactive "")
   (node-inspect-send-cmd node-inspect-ws
 			 (node-inspect-request '("Debugger.resume"))))
+
+;; FIXME: assumes global node-inspect-ws
+;; https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-evaluate
+(defun node-inspect-cmd-evaluate(eval-string)
+  "Evaluates expresion"
+  (interactive "s")
+  (node-inspect-send-cmd node-inspect-ws
+			 (node-inspect-request
+			  '("Debugger.resume" (format "\"expression\": \"%s\""
+						      eval-string)))))
 ;; FIXME: assumes global node-inspect-ws
 (defun node-inspect-cmd-step()
   (interactive "")
